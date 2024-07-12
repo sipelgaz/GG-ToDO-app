@@ -2,10 +2,12 @@ import React, { useState } from "react";
 //import { Text, View, TextInput, Button,  } from "react-native";
 import {Avatar, Button, Card, Text, TextInput} from "react-native-paper";
 import {View, StyleSheet} from "react-native";
+import {useRouter} from "expo-router";
 
 export default function Index() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const router = useRouter();
 
     const handleLogin = () => {
         // Handle login logic here
@@ -14,9 +16,10 @@ export default function Index() {
             alert("Please enter a username and password.");
         }
         if (username.toLowerCase() === "admin" && password === "admin") { // hardcoded username and password
-            alert("Admin login successful!");
+            router.push("taskList");
         } else if (username.toLowerCase() === "user" && password === "user") { // hardcoded username and password
             alert("User login successful!");
+            router.push("/taskList");
         } else {
             alert("Invalid username or password.");
         }
