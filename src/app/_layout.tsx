@@ -6,23 +6,34 @@ import {
 } from "react-native-paper";
 import { Colors } from "../constants/Colors";
 import { useColorScheme } from 'react-native';
+import {createContext, useState} from "react";
+import {IUser} from "@/src/domain/IUser";
 
 const customLightTheme = { ...MD3LightTheme, colors: Colors.light };
 const customDarkTheme = { ...MD3DarkTheme, colors: Colors.dark };
+
+export const UserContext = createContext<{
+    activeUser: IUser | null;
+    setActiveUser: ((user: IUser | null) => void) | null
+}>({activeUser: null, setActiveUser: null});
 
 
 export default function RootLayout() {
     const colorScheme = useColorScheme();
 
     const paperTheme = colorScheme === "dark" ? customDarkTheme : customLightTheme; // Use the custom theme based on the color scheme
-    return (
-        <PaperProvider theme={paperTheme}>
-            <Stack>
-                <Stack.Screen name="index" options={{ headerShown: true}} />
-                <Stack.Screen name="profile" options={{ headerShown: true}} />
-                <Stack.Screen name="taskList" options={{ headerShown: true}} />
-            </Stack>
-        </PaperProvider>
+    const [activeUser, setActiveUser] = useState(null as IUser | null);
 
+
+    return (
+        <UserContext.Provider value={{ activeUser, setActiveUser }}>
+            <PaperProvider theme={paperTheme}>
+                <Stack>
+                    <Stack.Screen name="index" options={{ headerShown: true}} />
+                    <Stack.Screen name="profile"  options={{ headerShown: true, title: "Profile"}} />
+                    <Stack.Screen name="taskList" options={{ headerShown: true }}  />
+                </Stack>
+            </PaperProvider>
+        </UserContext.Provider>
     );
 }

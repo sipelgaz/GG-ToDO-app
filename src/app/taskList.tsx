@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { View, StyleSheet, FlatList } from "react-native";
-import { Card, Text, Checkbox, Button } from "react-native-paper";
+import { View, StyleSheet} from "react-native";
+import { Card, Checkbox, Button } from "react-native-paper";
 import {useRouter} from "expo-router";
 
 const initialTasks = [
@@ -29,6 +29,8 @@ export default function TaskList() {
     const removeTask = (id: string) => {
         setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
     };
+
+    console.log()
 
 
     return (

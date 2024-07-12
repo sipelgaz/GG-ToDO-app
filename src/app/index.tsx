@@ -1,24 +1,46 @@
-import React, { useState } from "react";
-//import { Text, View, TextInput, Button,  } from "react-native";
-import {Avatar, Button, Card, Text, TextInput} from "react-native-paper";
+import React, {useContext, useState} from "react";
+import { Button, Text, TextInput} from "react-native-paper";
 import {View, StyleSheet} from "react-native";
 import {useRouter} from "expo-router";
+import {IUser} from "@/src/domain/IUser";
+import {UserContext} from "@/src/app/_layout";
 
 export default function Index() {
+    const router = useRouter();
+    const { activeUser, setActiveUser } = useContext(UserContext);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const router = useRouter();
+
+    const adminUser: IUser = {
+        id: "1",
+        name: "Master Admin",
+        email: "admin@notdomain.xyz",
+        isAdmin: true,
+    };
+    const regularUser: IUser = {
+        id: "2",
+        name: "Simple Joe",
+        email: "joe@notdomain.xyz",
+        isAdmin: false,
+    };
+
+    // let activeUser: IUser | null = null; // Change this to adminUser to test admin login
+
+
 
     const handleLogin = () => {
         // Handle login logic here
 
         if (username === "" || password === "") {
             alert("Please enter a username and password.");
-        }
-        if (username.toLowerCase() === "admin" && password === "admin") { // hardcoded username and password
+        } else if (username.toLowerCase() === "admin" && password === "admin") { // hardcoded username and password
+
+            setActiveUser!(adminUser);
+            // setActiveUser ? setActiveUser(adminUser) : null;
+
             router.push("taskList");
         } else if (username.toLowerCase() === "user" && password === "user") { // hardcoded username and password
-            alert("User login successful!");
+            setActiveUser!(regularUser);
             router.push("/taskList");
         } else {
             alert("Invalid username or password.");
@@ -72,3 +94,5 @@ const styles = StyleSheet.create({
         borderRadius: 4,
     },
 });
+
+// export default Index;
