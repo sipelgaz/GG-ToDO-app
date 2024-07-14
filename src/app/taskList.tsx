@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, {createContext, useContext, useState} from "react";
 import { View, StyleSheet} from "react-native";
 import {Card, Checkbox, Button, Title, Avatar} from "react-native-paper";
 import {useRouter} from "expo-router";
 import {ITask} from "@/src/domain/ITask";
 import dayjs from 'dayjs';
+import {IUser} from "@/src/domain/IUser";
+import {TaskContext, UserContext} from "@/src/app/_layout";
 
 const initialTasks = [
     { id: "1", title: "Task 1", day: "Monday", completed: false },
@@ -43,15 +45,15 @@ const sortTasksByDate = (tasks: ITask[]) => {
     return tasks.sort((a, b) => a.date.diff(b.date));
 };
 
-
 export default function TaskList() {
     const router = useRouter();
+    const { activeUser, setActiveUser } = useContext(UserContext);
+    const { activeTask, setActiveTask } = useContext(TaskContext);
+    const [tasks, setTasks] = useState(sortTasksByDate(initialTaskList));
 
     const goToProfile = () => {
         router.push('profile');
     };
-
-    const [tasks, setTasks] = useState(sortTasksByDate(initialTaskList));
 
     const toggleTaskCompletion = (id: string) => {
         setTasks((prevTasks) =>
@@ -65,21 +67,36 @@ export default function TaskList() {
         setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
     };
 
+    const handleAddTask = () => {
+        router.push('/taskForm');
+    };
+
+    const handleEditTask = (task: ITask) => {
+        setActiveTask!(task);
+        router.push(`/taskForm`);
+    };
+
     console.log()
 
 
     return (
         <View style={styles.container}>
             {tasks.map((task) => (
-                <Card key={task.id} style={styles.card}>
+                <Card key={task.id} style={styles.card} onPress={() => handleEditTask(task)}>
                     <Card.Content  >
                         <View style={styles.taskRow}>
+                            {activeUser?.isAdmin && (
                             <Checkbox
                                 status={task.completed ? "checked" : "unchecked"}
                                 onPress={() => toggleTaskCompletion(task.id)}
-                            />
+                                disabled={!activeUser?.isAdmin}
+                            />)}
                             <Title style={styles.taskTitle}>{task.title}</Title>
-                            <Button icon="trash-can" onPress={() => removeTask(task.id!)}>{""}</Button>
+                            {activeUser?.isAdmin && (
+                            <Button icon="trash-can"
+                                    onPress={() => removeTask(task.id!)}
+                                    disabled={!activeUser?.isAdmin}
+                            >{""}</Button>)}
                         </View>
                     </Card.Content>
                 </Card>
@@ -96,6 +113,22 @@ export default function TaskList() {
                         />
                     )}
             >{""}</Button>
+            {activeUser?.isAdmin && (
+            <Button mode="contained"
+                    onPress={handleAddTask}
+                    style={styles.addButton}
+                    icon={() => (
+                        <Avatar.Icon
+                            size= {50}
+                            icon="plus"
+                            color="red"
+                            style={{ marginLeft: 15 }} // Adjust spacing as needed
+                        />
+                    )}
+                    disabled={!activeUser?.isAdmin}
+            >{""}
+            </Button>)}
+
         </View>
     );
 }
@@ -120,6 +153,12 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: 16,
         left: 16,
+        width: 50,
+    },
+    addButton: {
+        position: "absolute",
+        bottom: 16,
+        right: 16,
         width: 50,
     },
 });
