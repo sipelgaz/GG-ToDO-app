@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, StyleSheet} from "react-native";
-import {Card, Checkbox, Button, Title} from "react-native-paper";
+import {Card, Checkbox, Button, Title, Avatar} from "react-native-paper";
 import {useRouter} from "expo-router";
 import {ITask} from "@/src/domain/ITask";
 import dayjs from 'dayjs';
@@ -17,7 +17,7 @@ const initialTaskList:ITask[] = [
         title: 'Complete project',
         description: 'Finish the task by the deadline',
         location: 'Tallinn, Estonia',
-        date: dayjs(), // Initialize with a Day.js date,
+        date: dayjs().add(7,"day"), // Initialize with a Day.js date,
         completed: false,
     },
     {
@@ -38,6 +38,11 @@ const initialTaskList:ITask[] = [
     }
 ];
 
+// Function to sort tasks by date
+const sortTasksByDate = (tasks: ITask[]) => {
+    return tasks.sort((a, b) => a.date.diff(b.date));
+};
+
 
 export default function TaskList() {
     const router = useRouter();
@@ -46,7 +51,7 @@ export default function TaskList() {
         router.push('profile');
     };
 
-    const [tasks, setTasks] = useState(initialTaskList);
+    const [tasks, setTasks] = useState(sortTasksByDate(initialTaskList));
 
     const toggleTaskCompletion = (id: string) => {
         setTasks((prevTasks) =>
@@ -74,14 +79,23 @@ export default function TaskList() {
                                 onPress={() => toggleTaskCompletion(task.id)}
                             />
                             <Title style={styles.taskTitle}>{task.title}</Title>
-                            <Button icon="trash-can" onPress={() => removeTask(task.id!)}> </Button>
+                            <Button icon="trash-can" onPress={() => removeTask(task.id!)}>{""}</Button>
                         </View>
                     </Card.Content>
                 </Card>
             ))}
-            <Button mode="contained" onPress={goToProfile} style={styles.profileButton}>
-                P
-            </Button>
+            <Button mode="contained"
+                    onPress={goToProfile}
+                    style={styles.profileButton}
+                    icon={() => (
+                        <Avatar.Icon
+                            size= {50}
+                            icon="account"
+                            color="red"
+                            style={{ marginLeft: 15 }} // Adjust spacing as needed
+                        />
+                    )}
+            >{""}</Button>
         </View>
     );
 }
@@ -106,5 +120,6 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: 16,
         left: 16,
+        width: 50,
     },
 });
