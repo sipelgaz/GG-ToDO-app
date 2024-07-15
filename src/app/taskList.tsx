@@ -1,21 +1,16 @@
-import React, {createContext, useContext, useState} from "react";
+import React, {createContext, useContext, useEffect, useState} from "react";
 import { View, StyleSheet} from "react-native";
 import {Card, Checkbox, Button, Title, Avatar} from "react-native-paper";
 import {useRouter} from "expo-router";
 import {ITask} from "@/src/domain/ITask";
 import dayjs from 'dayjs';
 import {IUser} from "@/src/domain/IUser";
-import {TaskContext, UserContext} from "@/src/app/_layout";
-
-const initialTasks = [
-    { id: "1", title: "Task 1", day: "Monday", completed: false },
-    { id: "2", title: "Task 2", day: "Tuesday", completed: false },
-    { id: "3", title: "Task 3", day: "Wednesday", completed: false },
-];
+import {ActiveTaskContext, TasksContext, UserContext} from "@/src/app/_layout";
+import Uuid from "expo-modules-core/src/uuid";
 
 const initialTaskList:ITask[] = [
     {
-        id: "1",
+        id: Uuid.v4(),
         title: 'Complete project',
         description: 'Finish the task by the deadline',
         location: 'Tallinn, Estonia',
@@ -23,15 +18,15 @@ const initialTaskList:ITask[] = [
         completed: false,
     },
     {
-        id: "2",
+        id: Uuid.v4(),
         title: 'Prepare coffee',
         description: 'Need coffee?',
-        location: 'Tallinn, Estonia',
+        location: 'Klaipeda, Lithuania',
         date: dayjs().add(2, "day"), // Initialize with a Day.js date
         completed: false,
     },
     {
-        id: "3",
+        id: Uuid.v4(),
         title: 'Pay taxes',
         description: 'Don\'t forget to pay taxes',
         location: 'Tallinn, Estonia',
@@ -48,19 +43,21 @@ const sortTasksByDate = (tasks: ITask[]) => {
 export default function TaskList() {
     const router = useRouter();
     const { activeUser, setActiveUser } = useContext(UserContext);
-    const { activeTask, setActiveTask } = useContext(TaskContext);
-    const [tasks, setTasks] = useState(sortTasksByDate(initialTaskList));
+    const { activeTask, setActiveTask } = useContext(ActiveTaskContext);
+    const { tasks, setTasks } = useContext(TasksContext);
+    const [showAllTasks, setShowAllTasks] = useState(false);
 
     const goToProfile = () => {
         router.push('profile');
     };
 
     const toggleTaskCompletion = (id: string) => {
-        setTasks((prevTasks) =>
-            prevTasks.map((task) =>
-                task.id === id ? { ...task, completed: !task.completed } : task
-            )
-        );
+            setTasks!((prevTasks:ITask[]) =>
+                prevTasks.map((task) =>
+                    task.id === id ? {...task, completed: !task.completed} : task
+                )
+            );
+
     };
 
     const removeTask = (id: string) => {
@@ -68,6 +65,7 @@ export default function TaskList() {
     };
 
     const handleAddTask = () => {
+        setActiveTask!(null);
         router.push('/taskForm');
     };
 
@@ -76,12 +74,29 @@ export default function TaskList() {
         router.push(`/taskForm`);
     };
 
-    console.log()
+    const filteredTasks = showAllTasks ? tasks : tasks.filter(task => !task.completed);
 
+    useEffect(() => {
+        // Sort tasks by date
+        const sortedTasks = sortTasksByDate(initialTaskList);
+
+        // Filter tasks based on your criteria, e.g., incomplete tasks
+        const filteredTasks = sortedTasks.filter(task => !task.completed);
+
+        // Update state with sorted and filtered tasks
+        setTasks!(filteredTasks);
+    }, []);
 
     return (
         <View style={styles.container}>
-            {tasks.map((task) => (
+            <Button
+                mode="contained"
+                onPress={() => setShowAllTasks(!showAllTasks)}
+                style={styles.toggleButton}
+            >
+                {showAllTasks ? "Show Incomplete Tasks" : "Show All Tasks"}
+            </Button>
+            {filteredTasks.map((task) => (
                 <Card key={task.id} style={styles.card} onPress={() => handleEditTask(task)}>
                     <Card.Content  >
                         <View style={styles.taskRow}>
@@ -108,7 +123,6 @@ export default function TaskList() {
                         <Avatar.Icon
                             size= {50}
                             icon="account"
-                            color="red"
                             style={{ marginLeft: 15 }} // Adjust spacing as needed
                         />
                     )}
@@ -121,7 +135,6 @@ export default function TaskList() {
                         <Avatar.Icon
                             size= {50}
                             icon="plus"
-                            color="red"
                             style={{ marginLeft: 15 }} // Adjust spacing as needed
                         />
                     )}
@@ -137,6 +150,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 16,
+        marginTop: 30,
+        paddingTop: 60,
     },
     card: {
         marginVertical: 8,
@@ -160,5 +175,8 @@ const styles = StyleSheet.create({
         bottom: 16,
         right: 16,
         width: 50,
+    },
+    toggleButton: {
+        marginBottom: 16,
     },
 });

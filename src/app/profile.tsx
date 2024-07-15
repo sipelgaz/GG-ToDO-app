@@ -14,8 +14,27 @@ export default function Profile() {
         alert("Logged out successfully!");
     };
 
+    const handleBack = () => {
+        router.back();
+    };
+
     return (
         <View style={styles.container}>
+            <View style={styles.header}>
+                <Button
+                    mode="contained"
+                    onPress={handleBack}
+                    icon={() => (
+                        <Avatar.Icon
+                            size={30}
+                            icon="arrow-left"
+                            style={{ marginLeft: 0 }}
+                        />
+                    )}
+                >
+                    Back
+                </Button>
+            </View>
             <Card style={styles.card}>
                 <Card.Title
                     title="Name"
@@ -43,7 +62,7 @@ export default function Profile() {
                     <Text variant="bodyMedium">{activeUser?.isAdmin ? "Admin" : "User"}</Text>
                 </Card.Content>
             </Card>
-            <Button mode="contained" onPress={handleLogout} style={styles.logoutButton}>
+            <Button mode="contained" onPress={handleLogout} style={styles.logoutButton} >
                 Logout
             </Button>
         </View>
@@ -51,20 +70,32 @@ export default function Profile() {
 }
 
 const styles = StyleSheet.create({
-        container: {
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 16,
-        },
-        card: {
-            width: "100%",
-            marginVertical: 8,
-        },
-        logoutButton: {
-            position: "absolute",
-            bottom: 16,
-            width: "90%",
-            padding: 16,
-        },
+    container: {
+        flex: 1,
+        justifyContent: "center",
+        padding: 16,
+        marginTop: 30,
+        paddingTop: 60,
+    },
+    header: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        flexDirection: "row",
+        justifyContent: "flex-start",
+        padding: 16,
+        zIndex: 1,
+    },
+    card: {
+        width: "100%",
+        marginVertical: 8,
+    },
+    logoutButton: {
+        position: "absolute",
+        bottom: 16,
+        width: "100%",
+        padding: 16,
+        margin: 16,
+        backgroundColor: "red",
+    },
 });
