@@ -1,12 +1,10 @@
 import React, {useState, useEffect, useContext} from "react";
 import { View, StyleSheet, Text } from "react-native";
-import {TextInput, Button, Avatar, Card} from "react-native-paper";
+import {TextInput, Button, Avatar} from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { ITask } from "@/src/domain/ITask";
 import dayjs from "dayjs";
-import {ExpoRouter} from "expo-router/types/expo-router";
 import Uuid from "expo-modules-core/src/uuid";
-import {ActiveTaskContext, UserContext} from "@/src/app/_layout";
+import {ActiveTaskContext, TasksContext, UserContext} from "@/src/app/_layout";
 import {fetchWeather} from "@/src/services/weatherService";
 
 
@@ -15,7 +13,8 @@ import {fetchWeather} from "@/src/services/weatherService";
 export default function TaskForm() {
     const router = useRouter();
     const { activeTask, setActiveTask } = useContext(ActiveTaskContext);
-    const { activeUser, setActiveUser } = useContext(UserContext);
+    const { activeUser } = useContext(UserContext);
+    const { tasks, setTasks } = useContext(TasksContext);
     const { id } = useLocalSearchParams();
     const [title, setTitle] = useState(activeTask?.title || "");
     const [description, setDescription] = useState(activeTask?.description || "");
@@ -41,19 +40,31 @@ export default function TaskForm() {
         getWeather();
     }, [location]);
 
+
     const handleSave = () => {
-        const task: ITask = {
-            id: activeTask?.id || Uuid.v4(),
+        const newOrUpdatedTask = {
+            id: activeTask?.id || Uuid.v4(), // Use existing id for edits, or generate a new one for new tasks
             title,
             description,
             location,
-            date,
+            date: activeTask?.date || dayjs(date.format("YYYY-MM-DD")),
             completed: activeTask?.completed || false,
         };
-        //saveTask(task);
+
+        const taskExists = tasks.some(task => task.id === newOrUpdatedTask.id);
+
+        if (taskExists) {
+            // Update existing task
+            setTasks(tasks.map(task => task.id === newOrUpdatedTask.id ? newOrUpdatedTask : task));
+        } else {
+            // Add new task
+            setTasks([...tasks, newOrUpdatedTask]);
+        }
         setActiveTask!(null);
         router.back();
     };
+
+
 
     const handleDelete = () => {
         if (!activeUser?.isAdmin) {
@@ -65,19 +76,6 @@ export default function TaskForm() {
         router.push("/taskList");
     };
 
-    const handleMarkCompleted = () => {
-        if (!activeUser?.isAdmin) {
-            alert("Only admins can mark tasks as completed.");
-            return;
-        }
-        const task: ITask = {
-            ...activeTask!,
-            completed: true,
-        };
-        // saveTask(task);
-        setActiveTask!(null);
-        router.push("/taskList");
-    };
 
     const handleBack = () => {
         router.back();
